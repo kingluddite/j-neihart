@@ -1,71 +1,42 @@
-# Connect MySQL
-
-* We need to use a package manager (for Node)
-    - npm
-* How do we install modules?
-    - How do we install the mysql module
-    - What is a module?
-
-`$ npm init`
-
-## What is package.json?
-`package.json`
-
-```
-{
-  "name": "ice-cream-db-connection",
-  "version": "1.0.0",
-  "description": "",
-  "main": "iceCreamDBConnection.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "mysql": "^2.16.0"
-  }
-}
-```
+# Read Data
+* Query data
 
 `seed.sql`
 
 ```
-DROP DATABASE IF EXISTS ice_creamDB;
+DROP DATABASE IF EXISTS playlistDB;
+CREATE DATABASE playlistDB;
 
-CREATE DATABASE ice_creamDB;
+USE playlistDB;
 
-USE ice_creamDB;
-
-CREATE TABLE products (
+CREATE TABLE songs(
   id INT NOT NULL AUTO_INCREMENT,
-  flavor VARCHAR(45) NULL,
-  price DECIMAL(10,2) NULL,
-  quantity INT NULL,
+  title VARCHAR(45) NULL,
+  artist VARCHAR(45) NULL,
+  genre VARCHAR(45) NULL,
   PRIMARY KEY (id)
 );
 
-INSERT INTO products (flavor, price, quantity)
-VALUES ("vanilla", 2.50, 100);
+INSERT INTO songs (title, artist, genre)
+VALUES ("Human", "Krewella", "Dance");
 
-INSERT INTO products (flavor, price, quantity)
-VALUES ("chocolate", 3.10, 120);
+INSERT INTO songs (title, artist, genre)
+VALUES ("TRNDSTTR","Black Coast", "Dance");
 
-INSERT INTO products (flavor, price, quantity)
-VALUES ("strawberry", 3.25, 75);
+INSERT INTO songs (title, artist, genre)
+VALUES ("Who's Next", "The Who", "Classic Rock");
 
--- ### Alternative way to insert more than one row
--- INSERT INTO products (flavor, price, quantity)
--- VALUES ("vanilla", 2.50, 100), ("chocolate", 3.10, 120), ("strawberry", 3.25, 75);
+INSERT INTO songs (title, artist, genre)
+VALUES ("Yellow Submarine", "The Beatles", "Classic Rock");
 ```
 
-## Connecting
-`server.js`
+* How do you install the mysql npm module again?
+
+## We need to connect
+`connection.js`
 
 ```
-
-var mysql = require("mysql");
+ar mysql = require("mysql");
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -78,14 +49,76 @@ var connection = mysql.createConnection({
 
   // Your password
   password: "",
-  database: "ice_creamDB"
+  database: "playlistDB"
 });
 
 connection.connect(function(err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId);
-  connection.end();
+  queryAllSongs();
+  queryDanceSongs();
 });
 ```
+
+### How can we query all songs from the songs Database table?
+* Here is the SQL `SELECT * FROM songs`
+
+`connections.js`
+
+```
+// MORE CODE
+
+connection.connect(function(err) {
+  if (err) throw err;
+  console.log("connected as id " + connection.threadId);
+  queryAllSongs();
+  queryDanceSongs();
+});
+
+function queryAllSongs() {
+  connection.query("SELECT * FROM songs", function(err, res) {
+    if (err) throw err;
+    for (var i = 0; i < res.length; i++) {
+      console.log(res[i].id + " | " + res[i].title + " | " + res[i].artist + " | " + res[i].genre);
+    }
+    console.log("-----------------------------------");
+  });
+}
+// MORE CODE
+```
+
+## How could we query for a song based on it's genre?
+`"SELECT * FROM songs WHERE genre "Dance"?`
+
+`connection.js`
+
+```
+// MORE CODE
+
+function queryAllSongs() {
+  connection.query("SELECT * FROM songs", function(err, res) {
+    if (err) throw err;
+    for (var i = 0; i < res.length; i++) {
+      console.log(res[i].id + " | " + res[i].title + " | " + res[i].artist + " | " + res[i].genre);
+    }
+    console.log("-----------------------------------");
+  });
+}
+
+function queryDanceSongs() {
+  var query = connection.query("SELECT * FROM songs WHERE genre=?", ["Dance"], function(err, res) {
+    if (err) throw err;
+    for (var i = 0; i < res.length; i++) {
+      console.log(res[i].id + " | " + res[i].title + " | " + res[i].artist + " | " + res[i].genre);
+    }
+  });
+
+  // logs the actual query being run
+  console.log(query.sql);
+  connection.end();
+}
+```
+
+
 
 
