@@ -1,114 +1,56 @@
-# Review MySQL
-## Mac/PC?
-
-## What is MySQL?
-* What is a relational Database?
-    - [WordPress Database Diagram (ER Diagram)](https://codex.wordpress.org/Database_Description)
-
-## WorkBench
-* IDE for writing SQL
-
-## Drop a Database
-```
--- Drops the animals_db if it exists currently --
-DROP DATABASE IF EXISTS animals_db;
-```
-
-## Create a Database
-```
--- Creates the "animals_db" database --
-CREATE DATABASE animals_db;
-```
-
-## We need to select the Database we want to manipulate
-```
--- Makes it so all of the following code will affect animals_db --
-USE animals_db;
-```
-
-## How do we create a table?
+# Tables
+`books.db`
 
 ```
--- Creates the table "people" within animals_db --
-CREATE TABLE people (
-  -- Makes a string column called "name" which cannot contain null --
-  name VARCHAR(30) NOT NULL,
-  -- Makes a boolean column called "has_pet" which cannot contain null --
-  has_pet BOOLEAN NOT NULL,
-  -- Makes a sting column called "pet_name" --
-  pet_name VARCHAR(30),
-  -- Makes an numeric column called "pet_age" --
-  pet_age INTEGER(
-```
+DROP DATABASE IF EXISTS books_db;
+CREATE DATABASE books_db;
+USE books_db;
 
-* Here is a variation of the people table
-    - What is AUTO_INCREMENT?
-    - What is a PRIMARY KEY?
-        + What is a FOREIGN KEY?
-
-```
--- Creates the table "people" within animals_db --
-CREATE TABLE people (
-  -- Creates a numeric column called "id" which will automatically increment its default value as we create new rows --
+CREATE TABLE books(
   id INTEGER(11) AUTO_INCREMENT NOT NULL,
-  -- Makes a string column called "name" which cannot contain null --
-  name VARCHAR(30) NOT NULL,
-  -- Makes a boolean column called "has_pet" which cannot contain null --
-  has_pet BOOLEAN NOT NULL,
-  -- Makes a sting column called "pet_name" --
-  pet_name VARCHAR(30),
-  -- Makes an numeric column called "pet_age" --
-  pet_age INTEGER(10),
-  -- Sets id as this table's primary key which means all data contained within it will be unique --
+  authorId INTEGER(11),
+  title VARCHAR(100),
   PRIMARY KEY (id)
 );
-```
 
-## Default values
-```
-CREATE TABLE programming_languages(
-  -- Creates a numeric column called "id" which will automatically increment its default value as we create new rows. --
+CREATE TABLE authors(
   id INTEGER(11) AUTO_INCREMENT NOT NULL,
-  language VARCHAR(20),
-  rating INTEGER(11),
-  -- Creates a boolean column called "mastered" which will automatically fill --
-  -- with true when a new row is made and the value isn't otherwise defined. --
-  mastered BOOLEAN DEFAULT true,
+  firstName VARCHAR(100),
+  lastName VARCHAR(100),
   PRIMARY KEY (id)
 );
-```
 
+INSERT INTO authors (firstName, lastName) values ('Jane', 'Austen');
+INSERT INTO authors (firstName, lastName) values ('Mark', 'Twain');
+INSERT INTO authors (firstName, lastName) values ('Lewis', 'Carroll');
+INSERT INTO authors (firstName, lastName) values ('Andre', 'Asselin');
 
-## What is CRUD?
+INSERT INTO books (title, authorId) values ('Pride and Prejudice', 1);
+INSERT INTO books (title, authorId) values ('Emma', 1);
+INSERT INTO books (title, authorId) values ('The Adventures of Tom Sawyer', 2);
+INSERT INTO books (title, authorId) values ('Adventures of Huckleberry Finn', 2);
+INSERT INTO books (title, authorId) values ('Alice''s Adventures in Wonderland', 3);
+INSERT INTO books (title, authorId) values ('Dracula', null);
 
-### How do we get data into our Database (The C in CRUD ---- CREATE)
-* What is AUTO_INCREMENT?
+SELECT * FROM authors;
+SELECT * FROM books;
 
-```
--- Creates new rows containing data in all named columns --
-INSERT INTO people (name, has_pet, pet_name, pet_age)
-VALUES ("Ahmed", TRUE, "Rockington", 100);
+-- show ALL books with authors
+-- INNER JOIN will only return all matching values from both tables
+SELECT title, firstName, lastName
+FROM books
+INNER JOIN authors ON books.authorId = authors.id;
 
-INSERT INTO people (name, has_pet, pet_name, pet_age)
-VALUES ("Ahmed", TRUE, "Rockington", 100);
+-- show ALL books, even if we don't know the author
+-- LEFT JOIN returns all of the values from the left table, and the matching ones from the right table
+SELECT title, firstName, lastName
+FROM books
+LEFT JOIN authors ON books.authorId = authors.id;
 
-INSERT INTO people (name, has_pet, pet_name, pet_age)
-VALUES ("Jacob", TRUE, "Misty", 10);
-
-INSERT INTO people (name, has_pet)
-VALUES ("Peter", false);
-```
-
-### How do we update data in a table? (The U in CRUD ---- UPDATE)
-```
--- Updates the row where the column name is peter --
-UPDATE people
-SET has_pet = true, pet_name = "Franklin", pet_age = 2
-WHERE name = "Peter";
-```
-
-### How do we select all people in our table (The R in CRUD ---- READ)
-```
-SELECT * FROM people;
+-- show ALL books, even if we don't know the author
+-- RIGHT JOIN returns all of the values from the right table, and the matching ones from the left table
+SELECT title, firstName, lastName
+FROM books
+RIGHT JOIN authors ON books.authorId = authors.id;
 ```
 
