@@ -1,42 +1,17 @@
-# Read Data
-* Query data
+# CRUD
 
-`seed.sql`
+* We need an app that requires mysql
+    - Initialize npm
+    - Install mysql
 
-```
-DROP DATABASE IF EXISTS playlistDB;
-CREATE DATABASE playlistDB;
+## Use a previous Database
+* We'll use `ice_creamDB`
 
-USE playlistDB;
-
-CREATE TABLE songs(
-  id INT NOT NULL AUTO_INCREMENT,
-  title VARCHAR(45) NULL,
-  artist VARCHAR(45) NULL,
-  genre VARCHAR(45) NULL,
-  PRIMARY KEY (id)
-);
-
-INSERT INTO songs (title, artist, genre)
-VALUES ("Human", "Krewella", "Dance");
-
-INSERT INTO songs (title, artist, genre)
-VALUES ("TRNDSTTR","Black Coast", "Dance");
-
-INSERT INTO songs (title, artist, genre)
-VALUES ("Who's Next", "The Who", "Classic Rock");
-
-INSERT INTO songs (title, artist, genre)
-VALUES ("Yellow Submarine", "The Beatles", "Classic Rock");
-```
-
-* How do you install the mysql npm module again?
-
-## We need to connect
+## We use same connection info
 `connection.js`
 
 ```
-ar mysql = require("mysql");
+var mysql = require("mysql");
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -49,75 +24,93 @@ var connection = mysql.createConnection({
 
   // Your password
   password: "",
-  database: "playlistDB"
+  database: "ice_creamDB"
 });
 
 connection.connect(function(err) {
   if (err) throw err;
-  console.log("connected as id " + connection.threadId);
-  queryAllSongs();
-  queryDanceSongs();
-});
-```
-
-### How can we query all songs from the songs Database table?
-* Here is the SQL `SELECT * FROM songs`
-
-`connections.js`
-
-```
-// MORE CODE
-
-connection.connect(function(err) {
-  if (err) throw err;
-  console.log("connected as id " + connection.threadId);
-  queryAllSongs();
-  queryDanceSongs();
+  console.log("connected as id " + connection.threadId + "\n");
+  createProduct();
 });
 
-function queryAllSongs() {
-  connection.query("SELECT * FROM songs", function(err, res) {
-    if (err) throw err;
-    for (var i = 0; i < res.length; i++) {
-      console.log(res[i].id + " | " + res[i].title + " | " + res[i].artist + " | " + res[i].genre);
-    }
-    console.log("-----------------------------------");
-  });
-}
-// MORE CODE
 ```
 
-## How could we query for a song based on it's genre?
-`"SELECT * FROM songs WHERE genre "Dance"?`
-
+### Now we add full CRUD
 `connection.js`
 
 ```
-// MORE CODE
-
-function queryAllSongs() {
-  connection.query("SELECT * FROM songs", function(err, res) {
-    if (err) throw err;
-    for (var i = 0; i < res.length; i++) {
-      console.log(res[i].id + " | " + res[i].title + " | " + res[i].artist + " | " + res[i].genre);
+function createProduct() {
+  console.log("Inserting a new product...\n");
+  var query = connection.query(
+    "INSERT INTO products SET ?",
+    {
+      flavor: "Rocky Road",
+      price: 3.0,
+      quantity: 50
+    },
+    function(err, res) {
+      if (err) throw err;
+      console.log(res.affectedRows + " product inserted!\n");
+      // Call updateProduct AFTER the INSERT completes
+      updateProduct();
     }
-    console.log("-----------------------------------");
-  });
-}
-
-function queryDanceSongs() {
-  var query = connection.query("SELECT * FROM songs WHERE genre=?", ["Dance"], function(err, res) {
-    if (err) throw err;
-    for (var i = 0; i < res.length; i++) {
-      console.log(res[i].id + " | " + res[i].title + " | " + res[i].artist + " | " + res[i].genre);
-    }
-  });
+  );
 
   // logs the actual query being run
   console.log(query.sql);
-  connection.end();
+}
+
+function updateProduct() {
+  console.log("Updating all Rocky Road quantities...\n");
+  var query = connection.query(
+    "UPDATE products SET ? WHERE ?",
+    [
+      {
+        quantity: 100
+      },
+      {
+        flavor: "Rocky Road"
+      }
+    ],
+    function(err, res) {
+      if (err) throw err;
+      console.log(res.affectedRows + " products updated!\n");
+      // Call deleteProduct AFTER the UPDATE completes
+      deleteProduct();
+    }
+  );
+
+  // logs the actual query being run
+  console.log(query.sql);
+}
+
+function deleteProduct() {
+  console.log("Deleting all strawberry icecream...\n");
+  connection.query(
+    "DELETE FROM products WHERE ?",
+    {
+      flavor: "strawberry"
+    },
+    function(err, res) {
+      if (err) throw err;
+      console.log(res.affectedRows + " products deleted!\n");
+      // Call readProducts AFTER the DELETE completes
+      readProducts();
+    }
+  );
+}
+
+function readProducts() {
+  console.log("Selecting all products...\n");
+  connection.query("SELECT * FROM products", function(err, res) {
+    if (err) throw err;
+    // Log all results of the SELECT statement
+    console.log(res);
+    connection.end();
+  });
 }
 ```
+
 
 
 
